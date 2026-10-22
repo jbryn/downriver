@@ -28,15 +28,15 @@ The measurements are checked against official river kilometrage from IMGW-PIB, t
 
 | Part | Technologies |
 |---|---|
-| API (`api/`) | PHP 8.1+, Slim 4, PHP-DI, Guzzle (only for refreshing river data) |
+| API (`api/`) | PHP 8.5.12+, Slim 4, PHP-DI, Guzzle (only for refreshing river data) |
 | Web client (`client/`) | Vue 3, TypeScript, Pinia, Leaflet, Tailwind CSS, Vite |
 | Tests | PHPUnit, Vitest, Cypress |
 | Code quality | PHPStan (strictest level), PHP-CS-Fixer, ESLint, Prettier |
-| CI | GitHub Actions: tests on PHP 8.1 and 8.4, linting, static analysis and end-to-end tests on every pull request |
+| CI | GitHub Actions: tests on PHP 8.5, linting, static analysis and end-to-end tests on every pull request |
 
 ## Quick start
 
-You need PHP 8.1 or newer with Composer, and Node.js 22 or newer.
+You need PHP 8.5.12 or newer with Composer, and Node.js 22 or newer.
 
 ```bash
 git clone https://github.com/jbryn/downriver.git
