@@ -21,7 +21,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": "^8.1",
+        "php": "^8.5.12",
         "ext-mbstring": "*",
         "slim/slim": "^4.11",
         "slim/psr7": "^1.6",
@@ -52,7 +52,7 @@
     },
     "config": {
         "platform": {
-            "php": "8.1.0"
+            "php": "8.5.12"
         }
     }
 }
