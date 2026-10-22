@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
 import AppShell from '../layout/AppShell.vue'
 import { resetThemeForTests } from '../../composables/useTheme'
 import { mockSystemTheme } from '../../test-utils/matchMedia'
@@ -17,6 +18,7 @@ const mountShell = () =>
 
 describe('AppShell', () => {
   beforeEach(() => {
+    setActivePinia(createPinia())
     resetThemeForTests()
     mockSystemTheme(false)
   })
@@ -33,9 +35,10 @@ describe('AppShell', () => {
     expect(wrapper.find(byTestId('side-panel')).find(byTestId('test-panel')).exists()).toBe(true)
   })
 
-  it('has a theme toggle in the header', () => {
+  it('has unit and theme toggles in the header', () => {
     const wrapper = mountShell()
 
+    expect(wrapper.find('header').find(byTestId('unit-toggle')).exists()).toBe(true)
     expect(wrapper.find('header').find(byTestId('theme-toggle')).exists()).toBe(true)
   })
 

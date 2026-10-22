@@ -1,7 +1,7 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { gwda } from '../../test-utils/fetch'
-import type { LatLng, River } from '../../types/river'
+import type { LatLng, River, SectionFeature } from '../../types/river'
 
 /**
  * Leaflet needs a real layout to draw, which jsdom does not have. The tests replace it
@@ -54,16 +54,46 @@ const leaflet = vi.hoisted(() => {
     on: vi.fn((name: string, handler: Handler) => {
       mapHandlers[name] = handler
     }),
-    hasLayer: vi.fn((layer: unknown) => layers.has(layer))
+    hasLayer: vi.fn((layer: unknown) => layers.has(layer)),
+    createPane: vi.fn(() => ({ style: {} as Record<string, string> }))
   }
   map.setView.mockReturnValue(map)
 
   const tiles = { addTo: vi.fn() }
 
+  /** The group holding the feature markers; tracks what is in it */
+  const featureGroup = {
+    members: [] as unknown[],
+    addTo: vi.fn(),
+    clearLayers: vi.fn(() => {
+      featureGroup.members.length = 0
+    })
+  }
+  featureGroup.addTo.mockReturnValue(featureGroup)
+
+  const makeCircle = (point: unknown, options: unknown) => {
+    const circle = {
+      point,
+      options,
+      tooltip: null as unknown,
+      bindTooltip: vi.fn((text: unknown) => {
+        circle.tooltip = text
+        return circle
+      }),
+      addTo: vi.fn((group: typeof featureGroup) => {
+        group.members.push(circle)
+        return circle
+      })
+    }
+    return circle
+  }
+
   return {
     map,
     layers,
     tiles,
+    featureGroup,
+    makeCircle,
     lines: [] as ReturnType<typeof makeLine>[],
     markers: [] as ReturnType<typeof makeMarker>[],
     makeLine,
@@ -75,6 +105,8 @@ vi.mock('leaflet', () => ({
   default: {
     map: vi.fn(() => leaflet.map),
     tileLayer: vi.fn(() => leaflet.tiles),
+    layerGroup: vi.fn(() => leaflet.featureGroup),
+    circleMarker: vi.fn((point: unknown, options: unknown) => leaflet.makeCircle(point, options)),
     divIcon: vi.fn((options: unknown) => options),
     polyline: vi.fn((points: unknown, options: unknown) => {
       const line = leaflet.makeLine()
@@ -111,6 +143,7 @@ const props = (
     start: LatLng | null
     end: LatLng | null
     section: LatLng[] | null
+    features: SectionFeature[] | null
     revision: number
   }> = {}
 ) => ({
@@ -118,6 +151,7 @@ const props = (
   start: null,
   end: null,
   section: null,
+  features: null,
   revision: 0,
   ...overrides
 })
@@ -134,6 +168,8 @@ describe('RiverMap', () => {
     leaflet.lines.length = 0
     leaflet.markers.length = 0
     leaflet.layers.clear()
+    leaflet.featureGroup.members.length = 0
+    leaflet.featureGroup.addTo.mockReturnValue(leaflet.featureGroup)
     leaflet.map.setView.mockReturnValue(leaflet.map)
   })
 
@@ -286,6 +322,71 @@ describe('RiverMap', () => {
       await wrapper.setProps({ section: null })
 
       expect(linesWithClass('section-line')[0].remove).toHaveBeenCalled()
+    })
+  })
+
+  describe('obstacles and access points', () => {
+    const weir: SectionFeature = {
+      kind: 'weir',
+      category: 'obstacle',
+      name: null,
+      point: [53.34, 16.81],
+      distance: 3548.8
+    }
+    const bridge: SectionFeature = {
+      kind: 'bridge',
+      category: 'access',
+      name: 'Most Bolesława Chrobrego',
+      point: [53.15, 16.74],
+      distance: 32502
+    }
+
+    type Circle = ReturnType<typeof leaflet.makeCircle>
+    const circles = () => leaflet.featureGroup.members as Circle[]
+
+    it('marks each feature of the section, styled by its category', async () => {
+      const wrapper = mount(RiverMap, { props: props({ river: gwda }) })
+      expect(circles()).toHaveLength(0)
+
+      await wrapper.setProps({ features: [weir, bridge] })
+
+      expect(circles().map((circle) => circle.point)).toEqual([weir.point, bridge.point])
+      expect(circles()[0].options).toMatchObject({
+        className: 'feature-marker feature-obstacle',
+        fillColor: '#dc2626',
+        pane: 'features'
+      })
+      expect(circles()[1].options).toMatchObject({
+        className: 'feature-marker feature-access',
+        pane: 'features'
+      })
+    })
+
+    it('names each feature in its tooltip', () => {
+      mount(RiverMap, { props: props({ river: gwda, features: [weir, bridge] }) })
+
+      expect(circles().map((circle) => circle.tooltip)).toEqual([
+        'Weir',
+        'Bridge: Most Bolesława Chrobrego'
+      ])
+    })
+
+    it('draws the markers above the section line and below A and B', () => {
+      mount(RiverMap, { props: props() })
+
+      const pane = leaflet.map.createPane.mock.results[0].value as { style: { zIndex: string } }
+      expect(leaflet.map.createPane).toHaveBeenCalledWith('features')
+      expect(pane.style.zIndex).toBe('450')
+    })
+
+    it('replaces the markers when the section changes and removes them when it is cleared', async () => {
+      const wrapper = mount(RiverMap, { props: props({ river: gwda, features: [weir, bridge] }) })
+
+      await wrapper.setProps({ features: [bridge] })
+      expect(circles()).toHaveLength(1)
+
+      await wrapper.setProps({ features: null })
+      expect(circles()).toHaveLength(0)
     })
   })
 
