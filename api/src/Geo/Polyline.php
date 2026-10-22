@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Jbryn\DistanceCalculator\Geo;
+namespace Jbryn\Downriver\Geo;
 
 use InvalidArgumentException;
 use LogicException;
@@ -220,7 +220,7 @@ final class Polyline
     {
         if (!($distance >= 0.0 && $distance <= $this->length())) {
             throw new InvalidArgumentException(
-                "Distance {$distance} m is outside the line (0 to {$this->length()} m)",
+                'Distance ' . (is_nan($distance) ? 'NAN' : $distance) . " m is outside the line (0 to {$this->length()} m)",
             );
         }
     }

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Jbryn\DistanceCalculator\Tests\Geo;
+namespace Jbryn\Downriver\Tests\Geo;
 
 use InvalidArgumentException;
-use Jbryn\DistanceCalculator\Geo\Point;
+use Jbryn\Downriver\Geo\Point;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -42,10 +42,10 @@ class PointTest extends TestCase
         return [
             'latitude too high' => [90.0001, 0.0, 'Latitude must be between -90 and 90'],
             'latitude too low' => [-90.0001, 0.0, 'Latitude must be between -90 and 90'],
-            'latitude not a number' => [NAN, 0.0, 'Latitude must be between -90 and 90'],
+            'latitude not a number' => [NAN, 0.0, 'Latitude must be between -90 and 90 degrees, got NAN'],
             'longitude too high' => [0.0, 180.0001, 'Longitude must be between -180 and 180'],
             'longitude too low' => [0.0, -180.0001, 'Longitude must be between -180 and 180'],
-            'longitude not a number' => [0.0, NAN, 'Longitude must be between -180 and 180'],
+            'longitude not a number' => [0.0, NAN, 'Longitude must be between -180 and 180 degrees, got NAN'],
         ];
     }
 
