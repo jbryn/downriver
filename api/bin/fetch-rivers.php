@@ -37,7 +37,9 @@ $settings = Settings::fromEnvironment($_ENV + $_SERVER + getenv());
 $catalogue = RiverCatalogue::fromFile($settings->riverCatalogueFile);
 
 $rivers = $catalogue->search('');
-$requested = array_slice($argv, 1);
+/** @var list<string> $arguments */
+$arguments = $_SERVER['argv'] ?? [];
+$requested = array_slice($arguments, 1);
 
 if ($requested !== []) {
     $rivers = [];
