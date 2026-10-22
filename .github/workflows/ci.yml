@@ -101,7 +101,7 @@ jobs:
         run: php -S localhost:8080 -t public &
 
       - name: Run Cypress
-        uses: cypress-io/github-action@v6
+        uses: cypress-io/github-action@v7
         with:
           working-directory: client
           start: npm run dev
