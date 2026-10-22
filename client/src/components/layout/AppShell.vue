@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import ThemeToggle from '../ThemeToggle.vue'
+import UnitToggle from '../UnitToggle.vue'
 
 /**
  * The page layout: a header, the map filling the rest of the screen, and a panel for
@@ -18,7 +19,10 @@ const sheetOpen = ref(true)
       <h1 class="text-base font-semibold tracking-tight" data-testid="app-title">
         <slot name="title" />
       </h1>
-      <ThemeToggle />
+      <div class="flex items-center gap-2">
+        <UnitToggle />
+        <ThemeToggle />
+      </div>
     </header>
 
     <div class="relative flex min-h-0 flex-1 flex-col md:flex-row">

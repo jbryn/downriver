@@ -2,7 +2,8 @@
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import L from 'leaflet'
 import { TILE_ATTRIBUTION, TILE_URL } from '../config'
-import type { LatLng, River } from '../types/river'
+import { featureLabel } from '../utils/features'
+import type { LatLng, River, SectionFeature } from '../types/river'
 
 const props = defineProps<{
   river: River | null
@@ -10,6 +11,8 @@ const props = defineProps<{
   end: LatLng | null
   /** The selected stretch of the river, drawn over it */
   section: LatLng[] | null
+  /** Obstacles and access points on the selected stretch */
+  features: SectionFeature[] | null
   /** Changes whenever a request about the selection finishes; see syncMarkers() */
   revision: number
 }>()
@@ -31,6 +34,7 @@ let riverLine: L.Polyline | null = null
 let sectionLine: L.Polyline | null = null
 let startMarker: L.Marker | null = null
 let endMarker: L.Marker | null = null
+let featureLayer: L.LayerGroup | null = null
 let resizeObserver: ResizeObserver | null = null
 
 const toLatLng = (latlng: L.LatLng): LatLng => [latlng.lat, latlng.lng]
@@ -109,6 +113,32 @@ const showSection = (points: LatLng[] | null) => {
   }
 }
 
+/** Above the river and section lines (z-index 400), below the A and B markers (600) */
+const FEATURE_PANE = 'features'
+
+const FEATURE_STYLES = {
+  obstacle: { color: '#ffffff', fillColor: '#dc2626', fillOpacity: 1 },
+  access: { color: '#0f766e', fillColor: '#ffffff', fillOpacity: 1 }
+} as const
+
+const showFeatures = (features: SectionFeature[] | null) => {
+  if (!featureLayer) return
+
+  featureLayer.clearLayers()
+
+  for (const feature of features ?? []) {
+    L.circleMarker(feature.point, {
+      ...FEATURE_STYLES[feature.category],
+      radius: 6,
+      weight: 2,
+      className: `feature-marker feature-${feature.category}`,
+      pane: FEATURE_PANE
+    })
+      .bindTooltip(featureLabel(feature))
+      .addTo(featureLayer)
+  }
+}
+
 onMounted(() => {
   if (!container.value) return
 
@@ -118,6 +148,9 @@ onMounted(() => {
   map.on('click', (event: L.LeafletMouseEvent) => {
     if (props.river) emit('pick', toLatLng(event.latlng))
   })
+
+  map.createPane(FEATURE_PANE).style.zIndex = '450'
+  featureLayer = L.layerGroup().addTo(map)
 
   startMarker = createMarker('A', 'Start', 'bg-emerald-600', (point) => emit('moveStart', point))
   endMarker = createMarker('B', 'Finish', 'bg-rose-600', (point) => emit('moveEnd', point))
@@ -135,11 +168,13 @@ onMounted(() => {
 
   showRiver(props.river)
   showSection(props.section)
+  showFeatures(props.features)
   syncMarkers()
 })
 
 watch(() => props.river, showRiver)
 watch(() => props.section, showSection)
+watch(() => props.features, showFeatures)
 watch([() => props.start, () => props.end, () => props.revision], syncMarkers)
 
 onBeforeUnmount(() => {

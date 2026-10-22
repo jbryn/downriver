@@ -1,12 +1,31 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
+import { usePreferencesStore } from '../stores/preferences'
 import { useSectionStore } from '../stores/section'
+import {
+  MAX_SPEED,
+  MIN_SPEED,
+  SPEED_STEP,
+  formatDistance,
+  formatDuration,
+  formatSpeed,
+  paddlingMinutes
+} from '../utils/trip'
+import SectionFeatures from './SectionFeatures.vue'
 
 const store = useSectionStore()
 const { start, end, section, status, error } = storeToRefs(store)
 
-const kilometers = computed(() => (section.value ? (section.value.length / 1000).toFixed(1) : null))
+const { unit, speed } = storeToRefs(usePreferencesStore())
+
+const length = computed(() =>
+  section.value ? formatDistance(section.value.length, unit.value) : null
+)
+
+const duration = computed(() =>
+  section.value ? formatDuration(paddlingMinutes(section.value.length, speed.value)) : null
+)
 
 const buttonClass =
   'rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-800'
@@ -31,7 +50,7 @@ const buttonClass =
     </p>
 
     <div v-else-if="section" class="mt-2">
-      <p class="text-3xl font-semibold" data-testid="section-length">{{ kilometers }} km</p>
+      <p class="text-3xl font-semibold" data-testid="section-length">{{ length }}</p>
       <p class="text-sm text-slate-500 dark:text-slate-400">
         along the river from <span class="font-semibold text-emerald-600">A</span> to
         <span class="font-semibold text-rose-600">B</span>
@@ -43,6 +62,32 @@ const buttonClass =
       >
         B is upstream of A: this trip goes against the current.
       </p>
+
+      <div class="mt-4 rounded-lg bg-slate-100 px-3 py-3 dark:bg-slate-800">
+        <p class="text-sm">
+          About <span class="font-semibold" data-testid="section-duration">{{ duration }}</span> of
+          paddling
+        </p>
+        <label class="mt-2 block text-xs text-slate-500 dark:text-slate-400" for="paddling-speed">
+          Average speed, breaks included:
+          <span class="font-medium text-slate-900 dark:text-white" data-testid="section-speed">
+            {{ formatSpeed(speed, unit) }}
+          </span>
+        </label>
+        <input
+          id="paddling-speed"
+          v-model.number="speed"
+          type="range"
+          :min="MIN_SPEED"
+          :max="MAX_SPEED"
+          :step="SPEED_STEP"
+          :aria-valuetext="formatSpeed(speed, unit)"
+          class="mt-1 w-full accent-blue-600"
+          data-testid="speed-input"
+        />
+      </div>
+
+      <SectionFeatures :features="section.features" />
     </div>
 
     <p

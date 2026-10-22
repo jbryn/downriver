@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/jbryn/downriver/actions/workflows/ci.yml/badge.svg)](https://github.com/jbryn/downriver/actions/workflows/ci.yml)
 
-A web app for planning kayaking trips. Pick a river and see it on a map; the next steps let you pick a start and a finish and get the distance along the river, following every bend, with the weirs, dams and landing places on the way.
+A web app for planning kayaking trips. Pick a river, click where you start and finish, and get the distance along the river, following every bend, with the paddling time and the weirs, dams and landing places on the way.
 
 ![The Gwda river shown on the map, with its length and numbers of obstacles and access points in the side panel](docs/screenshot.jpg)
 
@@ -12,15 +12,15 @@ Work in progress, tracked in the [Kayak river tool v1](https://github.com/jbryn/
 
 | | |
 |---|---|
-| **Works now** | Search 15 Polish rivers and show one on the map with its length, obstacles and access points. Light and dark themes; desktop and phone layouts. The API can already measure any section between two points. |
-| **Next** | Click a start and a finish on the map to measure a section; trip details (km or miles, paddling time, obstacles on the route); shareable links; GPX export; Docker and a public deployment. |
+| **Works now** | Search 15 Polish rivers and show one on the map. Click a start and a finish to measure the section along the river, then drag either end to adjust it. See the estimated paddling time at an adjustable speed, and the weirs, dams, bridges and landing places on the way, listed and marked on the map. Kilometers or miles; light and dark themes; desktop and phone layouts. |
+| **Next** | Shareable links; GPX export; Docker and a public deployment. |
 
 ## How it works
 
 1. **River data comes from OpenStreetMap.** A river there is a list of separate pieces. For each river on offer, the pieces and the features along it (weirs, dams, locks, bridges, landing places) are downloaded once through the Overpass API and saved in the repository. The app never waits on an outside service.
 2. **The API joins the pieces into one line** from source to mouth, refuses rivers whose map data has gaps, and places each feature on the line by its distance from the source.
 3. **A section is measured along that line.** Both points are snapped to the nearest place on the river, and the distance between them is the length of the line in between.
-4. **The web client** searches the rivers, draws the chosen one on a Leaflet map with OpenStreetMap tiles, and shows its details.
+4. **The web client** searches the rivers, draws the chosen one on a Leaflet map with OpenStreetMap tiles, lets you pick a section on it, and shows the section's length, paddling time and features.
 
 The measurements are checked against official river kilometrage from IMGW-PIB, the Polish hydrological service: on 33 stretches between gauging stations, 30 are within the reference tolerance (3%, or 6% on difficult reaches) and 21 within 0.5%.
 
@@ -78,8 +78,9 @@ client/
     api/         typed API client
     components/  Vue components
     composables/ search and theme logic
-    stores/      Pinia store for the selected river
-  cypress/       end-to-end tests
+    stores/      Pinia stores: the selected river and section, and preferences
+    utils/       unit conversion, paddling time and feature labels
+  cypress/       end-to-end tests and their map helpers
 docs/            API reference
 ```
 

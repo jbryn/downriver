@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
+import { usePreferencesStore } from '../stores/preferences'
 import { useRiverStore } from '../stores/river'
+import { formatDistance } from '../utils/trip'
 import SectionPanel from './SectionPanel.vue'
 
 const emit = defineEmits<{ back: [] }>()
 
 const store = useRiverStore()
 const { river, status, error } = storeToRefs(store)
+const { unit } = storeToRefs(usePreferencesStore())
 
-const kilometers = computed(() => (river.value ? (river.value.length / 1000).toFixed(1) : null))
+const length = computed(() => (river.value ? formatDistance(river.value.length, unit.value) : null))
 
 const obstacles = computed(
   () => river.value?.features.filter((feature) => feature.category === 'obstacle').length ?? 0
@@ -58,7 +61,7 @@ const accessPoints = computed(
       <dl class="mt-3 grid grid-cols-3 gap-3 text-center">
         <div class="rounded-lg bg-slate-100 px-2 py-3 dark:bg-slate-800">
           <dt class="text-xs text-slate-500 dark:text-slate-400">Length</dt>
-          <dd class="font-semibold" data-testid="river-length">{{ kilometers }} km</dd>
+          <dd class="font-semibold" data-testid="river-length">{{ length }}</dd>
         </div>
         <div class="rounded-lg bg-slate-100 px-2 py-3 dark:bg-slate-800">
           <dt class="text-xs text-slate-500 dark:text-slate-400">Obstacles</dt>
