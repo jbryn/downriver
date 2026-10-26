@@ -73,7 +73,6 @@ describe('SectionPanel', () => {
 
     expect(wrapper.find(byTestId('section-hint')).text()).toContain('Click the river again')
     expect(wrapper.find(byTestId('section-clear')).exists()).toBe(true)
-    expect(wrapper.find(byTestId('section-swap')).exists()).toBe(false)
   })
 
   it('shows the length of the section in kilometers', async () => {
@@ -83,6 +82,7 @@ describe('SectionPanel', () => {
 
     expect(wrapper.find(byTestId('section-length')).text()).toBe('57.8 km')
     expect(wrapper.find(byTestId('section-upstream')).exists()).toBe(false)
+    expect(wrapper.find(byTestId('section-reverse')).exists()).toBe(false)
   })
 
   it('shows the length in miles when chosen', async () => {
@@ -141,6 +141,19 @@ describe('SectionPanel', () => {
     expect(wrapper.find(byTestId('section-upstream')).text()).toContain('against the current')
   })
 
+  it('reverses an upstream section from the warning', async () => {
+    const wrapper = mount(SectionPanel)
+    await pickStartAndEnd(57810.7, false)
+
+    await wrapper.find(byTestId('section-reverse')).trigger('click')
+    expect(api.urls()[3]).toBe(
+      `http://localhost:8080/api/rivers/${gwda.id}/section?from=${B.join(',')}&to=${A.join(',')}`
+    )
+
+    await respond(success(gwdaSection(B, A, 57810.7)))
+    expect(wrapper.find(byTestId('section-upstream')).exists()).toBe(false)
+  })
+
   it('shows that it is measuring', async () => {
     const wrapper = mount(SectionPanel)
 
@@ -161,14 +174,9 @@ describe('SectionPanel', () => {
     expect(wrapper.find(byTestId('section-error')).text()).toContain('301.0 km from the river Gwda')
   })
 
-  it('swaps and clears through its buttons', async () => {
+  it('clears the selection through its button', async () => {
     const wrapper = mount(SectionPanel)
     await pickStartAndEnd()
-
-    await wrapper.find(byTestId('section-swap')).trigger('click')
-    expect(api.urls()[3]).toBe(
-      `http://localhost:8080/api/rivers/${gwda.id}/section?from=${B.join(',')}&to=${A.join(',')}`
-    )
 
     await wrapper.find(byTestId('section-clear')).trigger('click')
     expect(wrapper.find(byTestId('section-hint')).text()).toContain('set where you start')

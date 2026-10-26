@@ -26,9 +26,6 @@ const length = computed(() =>
 const duration = computed(() =>
   section.value ? formatDuration(paddlingMinutes(section.value.length, speed.value)) : null
 )
-
-const buttonClass =
-  'rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-800'
 </script>
 
 <template>
@@ -55,13 +52,22 @@ const buttonClass =
         along the river from <span class="font-semibold text-emerald-600">A</span> to
         <span class="font-semibold text-rose-600">B</span>
       </p>
-      <p
+      <div
         v-if="!section.downstream"
         class="mt-2 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-200"
         data-testid="section-upstream"
       >
-        B is upstream of A: this trip goes against the current.
-      </p>
+        <p>B is upstream of A: this trip goes against the current.</p>
+        <!-- Reversing only helps when the points were set in the wrong order; a downstream trip needs no such button -->
+        <button
+          type="button"
+          class="mt-2 rounded-md border border-amber-300 px-2.5 py-1 font-medium hover:bg-amber-100 dark:border-amber-700 dark:hover:bg-amber-900"
+          data-testid="section-reverse"
+          @click="store.swap()"
+        >
+          Paddle it downstream
+        </button>
+      </div>
 
       <div class="mt-4 rounded-lg bg-slate-100 px-3 py-3 dark:bg-slate-800">
         <p class="text-sm">
@@ -108,19 +114,14 @@ const buttonClass =
       {{ error }}
     </p>
 
-    <div v-if="start" class="mt-3 flex gap-2">
-      <button
-        v-if="end"
-        type="button"
-        :class="buttonClass"
-        data-testid="section-swap"
-        @click="store.swap()"
-      >
-        Swap A and B
-      </button>
-      <button type="button" :class="buttonClass" data-testid="section-clear" @click="store.clear()">
-        Clear
-      </button>
-    </div>
+    <button
+      v-if="start"
+      type="button"
+      class="mt-3 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-800"
+      data-testid="section-clear"
+      @click="store.clear()"
+    >
+      Clear
+    </button>
   </section>
 </template>

@@ -47,19 +47,31 @@ describe('Selecting a section', () => {
     expectLengthNear(32.5)
   })
 
-  it('swaps the start and the finish, and warns that the trip goes upstream', () => {
+  it('warns about an upstream trip and reverses it on request', () => {
+    // Set in the wrong order: the mouth first, then Ptusza
+    clickMapAt(MOUTH)
+    byTestId('section-hint').should('contain.text', 'Click the river again')
+    clickMapAt(PTUSZA)
+    expectLengthNear(57.8)
+    byTestId('section-upstream').should('contain.text', 'against the current')
+
+    byTestId('section-length')
+      .invoke('text')
+      .then((before) => {
+        byTestId('section-reverse').click()
+
+        byTestId('section-upstream').should('not.exist')
+        byTestId('section-length').should('have.text', before)
+      })
+  })
+
+  it('offers no reversing for a downstream trip', () => {
     clickMapAt(PTUSZA)
     byTestId('section-hint').should('contain.text', 'Click the river again')
     clickMapAt(MOUTH)
     expectLengthNear(57.8)
-    byTestId('section-length')
-      .invoke('text')
-      .then((before) => {
-        byTestId('section-swap').click()
 
-        byTestId('section-upstream').should('contain.text', 'against the current')
-        byTestId('section-length').should('have.text', before)
-      })
+    byTestId('section-reverse').should('not.exist')
   })
 
   it('clears the selection', () => {
