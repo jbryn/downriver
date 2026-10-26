@@ -24,6 +24,7 @@ const { start, end, section, revision } = storeToRefs(sectionStore)
         :start="start?.point ?? null"
         :end="end?.point ?? null"
         :section="section?.points ?? null"
+        :features="section?.features ?? null"
         :revision="revision"
         @pick="sectionStore.pick"
         @move-start="sectionStore.moveStart"

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import RiverDetails from '../RiverDetails.vue'
+import { usePreferencesStore } from '../../stores/preferences'
 import { useRiverStore } from '../../stores/river'
 import { controlledFetch, failure, flushPromises, gwda, success } from '../../test-utils/fetch'
 
@@ -9,6 +10,7 @@ const byTestId = (id: string) => `[data-testid="${id}"]`
 
 describe('RiverDetails', () => {
   beforeEach(() => {
+    localStorage.clear()
     setActivePinia(createPinia())
   })
 
@@ -37,6 +39,18 @@ describe('RiverDetails', () => {
     expect(wrapper.find(byTestId('river-length')).text()).toBe('142.9 km')
     expect(wrapper.find(byTestId('river-obstacles')).text()).toBe('2')
     expect(wrapper.find(byTestId('river-access-points')).text()).toBe('1')
+  })
+
+  it('shows the length in miles when chosen', async () => {
+    const api = controlledFetch()
+    const loading = useRiverStore().select(gwda.id)
+    api.respond(0, success(gwda))
+    await loading
+    usePreferencesStore().unit = 'mi'
+
+    const wrapper = mount(RiverDetails)
+
+    expect(wrapper.find(byTestId('river-length')).text()).toBe('88.8 mi')
   })
 
   it('shows an error and loads the river again on request', async () => {
