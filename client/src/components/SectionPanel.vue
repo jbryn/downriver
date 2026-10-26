@@ -12,6 +12,7 @@ import {
   formatSpeed,
   paddlingMinutes
 } from '../utils/trip'
+import CopyLinkButton from './CopyLinkButton.vue'
 import SectionFeatures from './SectionFeatures.vue'
 
 const store = useSectionStore()
@@ -114,14 +115,16 @@ const duration = computed(() =>
       {{ error }}
     </p>
 
-    <button
-      v-if="start"
-      type="button"
-      class="mt-3 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-800"
-      data-testid="section-clear"
-      @click="store.clear()"
-    >
-      Clear
-    </button>
+    <div v-if="start" class="mt-3 flex gap-2">
+      <CopyLinkButton v-if="end" />
+      <button
+        type="button"
+        class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-800"
+        data-testid="section-clear"
+        @click="store.clear()"
+      >
+        Clear
+      </button>
+    </div>
   </section>
 </template>
