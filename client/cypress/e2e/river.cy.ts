@@ -1,3 +1,4 @@
+import { leafletMap } from '../support/map'
 const byTestId = (id: string) => cy.get(`[data-testid="${id}"]`)
 
 const GWDA = 8974372
@@ -41,6 +42,25 @@ describe('Choosing a river', () => {
 
     cy.get('[data-testid="river-map"] path.river-line').should('have.length', 1)
     cy.wait('@tile')
+  })
+
+  it('keeps the river clear of the panel floating over the map', () => {
+    // The Warta runs east to west, so fitted without room for the panel it would pass under it
+    cy.viewport(1280, 800)
+    byTestId('river-option-3272339').click()
+    byTestId('river-name').should('have.text', 'Warta')
+    // Measured once the map has zoomed from all of Poland to the river and settled
+    leafletMap().should((map) => {
+      expect(map.getZoom()).to.be.greaterThan(6)
+    })
+    cy.wait(400)
+
+    cy.get('path.river-line').should(($line) => {
+      const line = $line[0].getBoundingClientRect()
+      const panel = Cypress.$('[data-testid="side-panel"]')[0].getBoundingClientRect()
+
+      expect(line.left).to.be.at.least(panel.right)
+    })
   })
 
   it('fits the map to the river', () => {

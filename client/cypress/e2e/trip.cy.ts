@@ -3,7 +3,7 @@ import { byTestId, clickMapAt, MOUTH, openGwda, PTUSZA } from '../support/map'
 /** Selects Ptusza to the mouth of the Gwda, about 57.8 km */
 const selectPtuszaToMouth = () => {
   clickMapAt(PTUSZA)
-  byTestId('section-hint').should('contain.text', 'Click the river again')
+  byTestId('section-hint').should('contain.text', 'where you take out')
   clickMapAt(MOUTH)
   byTestId('section-length').should('be.visible')
 }

@@ -27,16 +27,16 @@ const accessPoints = computed(
   <section data-testid="river-details">
     <button
       type="button"
-      class="mb-3 text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
+      class="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-river hover:underline"
       data-testid="change-river"
       @click="emit('back')"
     >
-      ← Choose another river
+      <span aria-hidden="true">←</span> Choose another river
     </button>
 
     <p
       v-if="status === 'loading'"
-      class="text-sm text-slate-500"
+      class="text-muted"
       aria-live="polite"
       data-testid="river-loading"
     >
@@ -44,32 +44,37 @@ const accessPoints = computed(
     </p>
 
     <div v-else-if="status === 'error'" role="alert" data-testid="river-error">
-      <p class="text-sm text-red-600 dark:text-red-400">{{ error }}</p>
-      <button
-        type="button"
-        class="mt-2 text-sm font-medium underline"
-        data-testid="river-retry"
-        @click="store.retry()"
-      >
+      <p class="text-danger">{{ error }}</p>
+      <button type="button" class="btn mt-3" data-testid="river-retry" @click="store.retry()">
         Try again
       </button>
     </div>
 
     <template v-else-if="river">
-      <h2 class="text-xl font-semibold" data-testid="river-name">{{ river.name }}</h2>
+      <h2 class="animate-rise font-display text-4xl leading-tight" data-testid="river-name">
+        {{ river.name }}
+      </h2>
 
-      <dl class="mt-3 grid grid-cols-3 gap-3 text-center">
-        <div class="rounded-lg bg-slate-100 px-2 py-3 dark:bg-slate-800">
-          <dt class="text-xs text-slate-500 dark:text-slate-400">Length</dt>
-          <dd class="font-semibold" data-testid="river-length">{{ length }}</dd>
+      <dl
+        class="mt-4 grid animate-rise grid-cols-3 divide-x divide-line rounded-2xl border border-line bg-paper/70 [animation-delay:60ms]"
+      >
+        <div class="px-3 py-3">
+          <dt class="text-xs text-muted">Length</dt>
+          <dd class="mt-1 font-display text-xl" data-testid="river-length">{{ length }}</dd>
         </div>
-        <div class="rounded-lg bg-slate-100 px-2 py-3 dark:bg-slate-800">
-          <dt class="text-xs text-slate-500 dark:text-slate-400">Obstacles</dt>
-          <dd class="font-semibold" data-testid="river-obstacles">{{ obstacles }}</dd>
+        <div class="px-3 py-3">
+          <dt class="flex items-center gap-1.5 text-xs text-muted">
+            <span class="dot dot-obstacle size-2.5" aria-hidden="true" />Obstacles
+          </dt>
+          <dd class="mt-1 font-display text-xl" data-testid="river-obstacles">{{ obstacles }}</dd>
         </div>
-        <div class="rounded-lg bg-slate-100 px-2 py-3 dark:bg-slate-800">
-          <dt class="text-xs text-slate-500 dark:text-slate-400">Access points</dt>
-          <dd class="font-semibold" data-testid="river-access-points">{{ accessPoints }}</dd>
+        <div class="px-3 py-3">
+          <dt class="flex items-center gap-1.5 text-xs text-muted">
+            <span class="dot dot-access size-2.5" aria-hidden="true" />Access
+          </dt>
+          <dd class="mt-1 font-display text-xl" data-testid="river-access-points">
+            {{ accessPoints }}
+          </dd>
         </div>
       </dl>
 

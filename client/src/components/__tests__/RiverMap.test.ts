@@ -60,6 +60,7 @@ const leaflet = vi.hoisted(() => {
   map.setView.mockReturnValue(map)
 
   const tiles = { addTo: vi.fn() }
+  const zoomControl = { addTo: vi.fn() }
 
   /** The group holding the feature markers; tracks what is in it */
   const featureGroup = {
@@ -92,6 +93,7 @@ const leaflet = vi.hoisted(() => {
     map,
     layers,
     tiles,
+    zoomControl,
     featureGroup,
     makeCircle,
     lines: [] as ReturnType<typeof makeLine>[],
@@ -106,6 +108,7 @@ vi.mock('leaflet', () => ({
     map: vi.fn(() => leaflet.map),
     tileLayer: vi.fn(() => leaflet.tiles),
     layerGroup: vi.fn(() => leaflet.featureGroup),
+    control: { zoom: vi.fn(() => leaflet.zoomControl) },
     circleMarker: vi.fn((point: unknown, options: unknown) => leaflet.makeCircle(point, options)),
     divIcon: vi.fn((options: unknown) => options),
     polyline: vi.fn((points: unknown, options: unknown) => {
@@ -199,7 +202,34 @@ describe('RiverMap', () => {
         gwda.points,
         expect.objectContaining({ className: 'river-line' })
       )
-      expect(leaflet.map.fitBounds).toHaveBeenCalledWith('river bounds', { padding: [24, 24] })
+      expect(leaflet.map.fitBounds).toHaveBeenCalledWith('river bounds', {
+        paddingTopLeft: [24, 24],
+        paddingBottomRight: [24, 24]
+      })
+    })
+
+    it('keeps the river clear of the panel floating over the map', () => {
+      const wrapper = mount(RiverMap, { props: props(), attachTo: document.body })
+      // AppShell sets this on the map area on wide screens and browsers pass it down to
+      // Leaflet's container; jsdom does not pass custom properties down, so it is set there
+      const container = wrapper.element.firstElementChild as HTMLElement
+      container.style.setProperty('--map-cover-left', '416px')
+
+      return wrapper.setProps({ river: gwda }).then(() => {
+        expect(leaflet.map.fitBounds).toHaveBeenLastCalledWith('river bounds', {
+          paddingTopLeft: [440, 24],
+          paddingBottomRight: [24, 24]
+        })
+        wrapper.unmount()
+      })
+    })
+
+    it('puts the zoom buttons on the right, away from the panel', () => {
+      mount(RiverMap, { props: props() })
+
+      expect(L.map).toHaveBeenCalledWith(expect.anything(), { zoomControl: false })
+      expect(L.control.zoom).toHaveBeenCalledWith({ position: 'topright' })
+      expect(leaflet.zoomControl.addTo).toHaveBeenCalledWith(leaflet.map)
     })
 
     it('replaces the line when another river is chosen, and removes it when none is', async () => {
@@ -353,7 +383,6 @@ describe('RiverMap', () => {
       expect(circles().map((circle) => circle.point)).toEqual([weir.point, bridge.point])
       expect(circles()[0].options).toMatchObject({
         className: 'feature-marker feature-obstacle',
-        fillColor: '#dc2626',
         pane: 'features'
       })
       expect(circles()[1].options).toMatchObject({

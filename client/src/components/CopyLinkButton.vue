@@ -32,7 +32,7 @@ onBeforeUnmount(() => clearTimeout(reset))
   <button
     v-if="supported"
     type="button"
-    class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-800"
+    class="btn"
     aria-live="polite"
     data-testid="copy-link"
     @click="copy"

@@ -42,9 +42,9 @@ const toLatLng = (latlng: L.LatLng): LatLng => [latlng.lat, latlng.lng]
 const markerIcon = (label: string, colour: string) =>
   L.divIcon({
     className: '',
-    html: `<span class="flex size-7 items-center justify-center rounded-full border-2 border-white text-sm font-bold text-white shadow-md ${colour}">${label}</span>`,
-    iconSize: [28, 28],
-    iconAnchor: [14, 14]
+    html: `<span class="flex size-8 items-center justify-center rounded-full border-[3px] border-white font-display text-base text-white shadow-lg ${colour}">${label}</span>`,
+    iconSize: [32, 32],
+    iconAnchor: [16, 16]
   })
 
 const createMarker = (
@@ -80,6 +80,16 @@ const syncMarkers = () => {
   }
 }
 
+/** Space kept around what the map fits in view, clear of the panel floating over it */
+const fitPadding = (): L.FitBoundsOptions => {
+  const covered = container.value
+    ? Number.parseFloat(getComputedStyle(container.value).getPropertyValue('--map-cover-left'))
+    : 0
+  const left = Number.isFinite(covered) ? covered : 0
+
+  return { paddingTopLeft: [left + 24, 24], paddingBottomRight: [24, 24] }
+}
+
 const showRiver = (river: River | null) => {
   if (!map) return
 
@@ -87,12 +97,9 @@ const showRiver = (river: River | null) => {
   riverLine = null
 
   if (river) {
-    riverLine = L.polyline(river.points, {
-      color: '#2563eb',
-      weight: 4,
-      className: 'river-line'
-    }).addTo(map)
-    map.fitBounds(riverLine.getBounds(), { padding: [24, 24] })
+    // Colours of lines and markers come from the theme, in style.css
+    riverLine = L.polyline(river.points, { weight: 4, className: 'river-line' }).addTo(map)
+    map.fitBounds(riverLine.getBounds(), fitPadding())
   }
 }
 
@@ -104,7 +111,6 @@ const showSection = (points: LatLng[] | null) => {
 
   if (points && points.length >= 2) {
     sectionLine = L.polyline(points, {
-      color: '#f97316',
       weight: 7,
       className: 'section-line',
       // Clicks on the section go to the map, like clicks on the river
@@ -116,11 +122,6 @@ const showSection = (points: LatLng[] | null) => {
 /** Above the river and section lines (z-index 400), below the A and B markers (600) */
 const FEATURE_PANE = 'features'
 
-const FEATURE_STYLES = {
-  obstacle: { color: '#ffffff', fillColor: '#dc2626', fillOpacity: 1 },
-  access: { color: '#0f766e', fillColor: '#ffffff', fillOpacity: 1 }
-} as const
-
 const showFeatures = (features: SectionFeature[] | null) => {
   if (!featureLayer) return
 
@@ -128,7 +129,7 @@ const showFeatures = (features: SectionFeature[] | null) => {
 
   for (const feature of features ?? []) {
     L.circleMarker(feature.point, {
-      ...FEATURE_STYLES[feature.category],
+      fillOpacity: 1,
       radius: 6,
       weight: 2,
       className: `feature-marker feature-${feature.category}`,
@@ -142,7 +143,9 @@ const showFeatures = (features: SectionFeature[] | null) => {
 onMounted(() => {
   if (!container.value) return
 
-  map = L.map(container.value).setView(START_CENTER, START_ZOOM)
+  map = L.map(container.value, { zoomControl: false }).setView(START_CENTER, START_ZOOM)
+  // On the right: on wide screens the panel covers the left of the map
+  L.control.zoom({ position: 'topright' }).addTo(map)
   L.tileLayer(TILE_URL, { attribution: TILE_ATTRIBUTION, maxZoom: 19 }).addTo(map)
 
   map.on('click', (event: L.LeafletMouseEvent) => {
@@ -152,8 +155,8 @@ onMounted(() => {
   map.createPane(FEATURE_PANE).style.zIndex = '450'
   featureLayer = L.layerGroup().addTo(map)
 
-  startMarker = createMarker('A', 'Start', 'bg-emerald-600', (point) => emit('moveStart', point))
-  endMarker = createMarker('B', 'Finish', 'bg-rose-600', (point) => emit('moveEnd', point))
+  startMarker = createMarker('A', 'Start', 'bg-start', (point) => emit('moveStart', point))
+  endMarker = createMarker('B', 'Finish', 'bg-finish', (point) => emit('moveEnd', point))
 
   // The map's box changes when the bottom sheet opens or closes; Leaflet must be told
   if (typeof ResizeObserver !== 'undefined') {

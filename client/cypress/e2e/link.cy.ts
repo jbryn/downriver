@@ -50,7 +50,7 @@ describe('Shareable links', () => {
     visitLink(`?river=${GWDA}`)
 
     byTestId('river-name').should('have.text', 'Gwda')
-    byTestId('section-hint').should('contain.text', 'set where you start')
+    byTestId('section-hint').should('contain.text', 'where you put in')
     cy.location('search').should('eq', `?river=${GWDA}&unit=km&speed=5`)
   })
 
@@ -59,7 +59,7 @@ describe('Shareable links', () => {
     cy.location('search').should('eq', `?river=${GWDA}&unit=km&speed=5`)
 
     clickMapAt(PTUSZA)
-    byTestId('section-hint').should('contain.text', 'Click the river again')
+    byTestId('section-hint').should('contain.text', 'where you take out')
     cy.location('search').should('match', /^\?river=8974372&from=[\d.]+,[\d.]+&unit=km&speed=5$/)
 
     clickMapAt(MOUTH)
@@ -79,7 +79,7 @@ describe('Shareable links', () => {
   it('keeps the trip after a reload', () => {
     openGwda()
     clickMapAt(PTUSZA)
-    byTestId('section-hint').should('contain.text', 'Click the river again')
+    byTestId('section-hint').should('contain.text', 'where you take out')
     clickMapAt(MOUTH)
 
     byTestId('section-length')

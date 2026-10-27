@@ -21,10 +21,10 @@ describe('ThemeToggle', () => {
   it('offers the system theme, light and dark, with the system theme selected', () => {
     const wrapper = mount(ThemeToggle)
 
-    expect(wrapper.findAll('button').map((button) => button.text())).toEqual([
-      'Auto',
-      'Light',
-      'Dark'
+    expect(wrapper.findAll('button').map((button) => button.attributes('aria-label'))).toEqual([
+      'Automatic theme',
+      'Light theme',
+      'Dark theme'
     ])
     expect(wrapper.find(byTestId('theme-system')).attributes('aria-pressed')).toBe('true')
     expect(wrapper.find(byTestId('theme-dark')).attributes('aria-pressed')).toBe('false')
