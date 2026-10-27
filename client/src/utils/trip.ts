@@ -14,9 +14,13 @@ const MINUTES_ROUNDING = 5
 
 const metersPerUnit = (unit: DistanceUnit) => (unit === 'km' ? 1000 : METERS_PER_MILE)
 
+/** The number alone, "57.8", for showing it apart from its unit */
+export const distanceValue = (meters: number, unit: DistanceUnit): string =>
+  (meters / metersPerUnit(unit)).toFixed(1)
+
 /** "57.8 km" or "35.9 mi" */
 export const formatDistance = (meters: number, unit: DistanceUnit): string =>
-  `${(meters / metersPerUnit(unit)).toFixed(1)} ${unit}`
+  `${distanceValue(meters, unit)} ${unit}`
 
 /** "5.0 km/h" or "3.1 mph", from a speed in km/h */
 export const formatSpeed = (kilometersPerHour: number, unit: DistanceUnit): string =>

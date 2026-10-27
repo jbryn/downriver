@@ -3,8 +3,81 @@
 /* Dark styles follow the "dark" class on <html>, which useTheme sets */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * Colours of a river chart. Day: printed paper. Night: deep water.
+ * Navigation marks lend the signal colours: a green and a red buoy for the start and
+ * the finish, the yellow of hazard marks for obstacles, buoy orange for the section.
+ * src/__tests__/contrast.test.ts checks the text colours against their backgrounds.
+ */
+:root {
+  --paper: #f3eee3;
+  /* Panels float over the map; mostly opaque so text stays readable on any tile */
+  --surface: rgb(251 248 242 / 0.9);
+  --sunken: #e9e1cf;
+  --ink: #15302e;
+  --muted: #4b5f5b;
+  --line: #d6ccb6;
+  --river: #0d6674;
+  --section: #e0542a;
+  --start: #1d7547;
+  --finish: #c22f27;
+  --hazard: #f2b705;
+  --access: #0d6674;
+  --warn: #f7e2b0;
+  --warn-ink: #5e3c00;
+  --danger: #a3261f;
+}
+
+.dark {
+  --paper: #0a181b;
+  --surface: rgb(13 31 35 / 0.9);
+  --sunken: #15313a;
+  --ink: #e5eee8;
+  --muted: #9cb3ad;
+  --line: #24434a;
+  --river: #5bc0cf;
+  --section: #ff7a45;
+  --start: #1d7547;
+  --finish: #c22f27;
+  --hazard: #f5c518;
+  --access: #5bc0cf;
+  --warn: #3a2b0b;
+  --warn-ink: #f4d58c;
+  --danger: #ff8f84;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-sunken: var(--sunken);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-river: var(--river);
+  --color-section: var(--section);
+  --color-start: var(--start);
+  --color-finish: var(--finish);
+  --color-hazard: var(--hazard);
+  --color-access: var(--access);
+  --color-warn: var(--warn);
+  --color-warn-ink: var(--warn-ink);
+  --color-danger: var(--danger);
+}
+
 @theme {
-  --font-sans: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Designed for legibility, which matters on a phone in sunlight at the riverbank */
+  --font-sans: 'Atkinson Hyperlegible Next Variable', system-ui, sans-serif;
+  /* For names and the distances that matter */
+  --font-display: 'Young Serif', Georgia, serif;
+
+  --animate-rise: rise 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
 }
 
 @layer base {
@@ -15,17 +88,125 @@
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+    @apply bg-paper font-sans text-ink antialiased;
+  }
+
+  /* Contour lines, as on a survey map; behind the panels, never behind text alone */
+  .contours {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' fill='none' stroke='%2315302e' stroke-opacity='.07'%3E%3Cpath d='M-20 60c40-30 80 20 120-5s70-40 160 10M-20 110c50-25 90 25 130 0s80-30 150 15M-20 160c40-20 100 30 140 5s60-35 140 10M-20 210c60-30 90 20 130-5s80-25 150 10'/%3E%3C/svg%3E");
+  }
+
+  .dark .contours {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' fill='none' stroke='%23e5eee8' stroke-opacity='.06'%3E%3Cpath d='M-20 60c40-30 80 20 120-5s70-40 160 10M-20 110c50-25 90 25 130 0s80-30 150 15M-20 160c40-20 100 30 140 5s60-35 140 10M-20 210c60-30 90 20 130-5s80-25 150 10'/%3E%3C/svg%3E");
   }
 }
 
-/* Map tiles are only drawn light; in the dark theme they are inverted to match */
-.dark .leaflet-tile-pane {
-  filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9);
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
-.dark .leaflet-container {
-  background: var(--color-slate-800);
+@layer components {
+  /* A and B as on the map: a green and a red buoy */
+  .buoy {
+    @apply inline-flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-white font-display text-xs text-white shadow;
+  }
+
+  .buoy-sm {
+    @apply size-5 text-[0.65rem];
+  }
+
+  /* Features as on the map: hazard yellow for obstacles, a ringed circle for access */
+  .dot {
+    @apply relative z-10 size-3 shrink-0 rounded-full border-2;
+  }
+
+  .dot-obstacle {
+    @apply border-[#15302e] bg-hazard;
+  }
+
+  .dot-access {
+    @apply border-access bg-paper;
+  }
+
+  .btn {
+    @apply rounded-xl border border-line bg-paper/70 px-3.5 py-2 text-sm font-semibold transition hover:border-river hover:text-river focus-visible:ring-4 focus-visible:ring-river/20 focus-visible:outline-none;
+  }
+}
+
+/* --- The map ----------------------------------------------------------------------- */
+
+/* Tiles toned towards the chart: a little faded by day, inverted to deep water by night */
+.leaflet-tile-pane {
+  filter: saturate(0.7) sepia(0.15);
+}
+
+.dark .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.8) contrast(0.85) saturate(0.6);
+}
+
+.leaflet-container {
+  background: var(--sunken);
+  font-family: var(--font-sans);
+}
+
+/* Lines and markers take their colours from the theme; CSS beats Leaflet's attributes */
+.river-line {
+  stroke: var(--river);
+}
+
+.section-line {
+  stroke: var(--section);
+}
+
+.feature-obstacle {
+  fill: var(--hazard);
+  stroke: #15302e;
+}
+
+.feature-access {
+  fill: var(--paper);
+  stroke: var(--access);
+}
+
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--line);
+  backdrop-filter: blur(8px);
+}
+
+.leaflet-bar {
+  border: 1px solid var(--line) !important;
+  border-radius: 0.75rem !important;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.12) !important;
+}
+
+.leaflet-control-attribution {
+  background: var(--surface) !important;
+  color: var(--muted);
+  border-top-left-radius: 0.5rem;
+}
+
+.leaflet-control-attribution a {
+  color: var(--river);
+}
+
+.leaflet-tooltip {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  font-family: var(--font-sans);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.15);
+  backdrop-filter: blur(8px);
 }
 
 /* While a river is shown, clicking the map places a point on it */

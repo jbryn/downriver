@@ -59,8 +59,9 @@ describe('SectionPanel', () => {
   it('asks for a start first', () => {
     const wrapper = mount(SectionPanel)
 
-    expect(wrapper.find(byTestId('section-hint')).text()).toBe(
-      'Click the river on the map to set where you start.'
+    // The A badge beside the text is decorative and hidden from screen readers
+    expect(wrapper.find(byTestId('section-hint')).text()).toContain(
+      'Click the river where you put in.'
     )
     expect(wrapper.find(byTestId('section-clear')).exists()).toBe(false)
   })
@@ -71,7 +72,7 @@ describe('SectionPanel', () => {
     void useSectionStore().pick(A)
     await respond(success(gwdaSection(A, A, 0)))
 
-    expect(wrapper.find(byTestId('section-hint')).text()).toContain('Click the river again')
+    expect(wrapper.find(byTestId('section-hint')).text()).toContain('where you take out')
     expect(wrapper.find(byTestId('section-clear')).exists()).toBe(true)
   })
 
@@ -179,6 +180,6 @@ describe('SectionPanel', () => {
     await pickStartAndEnd()
 
     await wrapper.find(byTestId('section-clear')).trigger('click')
-    expect(wrapper.find(byTestId('section-hint')).text()).toContain('set where you start')
+    expect(wrapper.find(byTestId('section-hint')).text()).toContain('where you put in')
   })
 })

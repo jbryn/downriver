@@ -19,54 +19,58 @@ const plural = (count: number, word: string) => `${count} ${word}${count === 1 ?
 </script>
 
 <template>
-  <div class="mt-5" data-testid="section-features">
-    <h4 class="text-sm font-semibold">
+  <div class="mt-6" data-testid="section-features">
+    <h4 class="text-xs font-bold tracking-[0.16em] text-muted uppercase">
       On the route
-      <span class="font-normal text-slate-500 dark:text-slate-400">· distances from A</span>
+      <span class="font-normal tracking-normal normal-case">· distances from A</span>
     </h4>
 
     <p
       v-if="features.length === 0"
-      class="mt-1 text-sm text-slate-500 dark:text-slate-400"
+      class="mt-2 text-sm text-muted"
       data-testid="section-features-empty"
     >
       No obstacles or access points are mapped on this section.
     </p>
 
     <template v-else>
-      <p
-        class="mt-1 text-sm text-slate-500 dark:text-slate-400"
-        data-testid="section-features-summary"
-      >
-        {{ plural(obstacles, 'obstacle') }} · {{ plural(accessPoints, 'access point') }}
+      <p class="mt-2 flex items-center gap-3 text-sm" data-testid="section-features-summary">
+        <span class="flex items-center gap-1.5"
+          ><span class="dot dot-obstacle" aria-hidden="true" />{{
+            plural(obstacles, 'obstacle')
+          }}</span
+        >
+        <span class="text-muted">{{ ' · ' }}</span>
+        <span class="flex items-center gap-1.5"
+          ><span class="dot dot-access" aria-hidden="true" />{{
+            plural(accessPoints, 'access point')
+          }}</span
+        >
       </p>
 
-      <ol class="mt-2 divide-y divide-slate-100 text-sm dark:divide-slate-800">
+      <!-- The line down the list stands for the river, with each feature on it -->
+      <ol
+        class="relative mt-3 text-sm before:absolute before:top-3 before:bottom-3 before:left-[82px] before:w-0.5 before:rounded-full before:bg-river/30"
+      >
         <li
           v-for="(feature, index) in features"
           :key="index"
-          class="flex items-baseline gap-3 py-1.5"
+          class="relative flex items-baseline gap-3 py-1.5"
           :data-testid="`section-feature-${feature.category}`"
         >
-          <span class="w-16 shrink-0 text-right text-slate-500 tabular-nums dark:text-slate-400">
+          <span class="w-[70px] shrink-0 text-right text-muted tabular-nums">
             {{ formatDistance(feature.distance, unit) }}
           </span>
           <span
-            class="size-2.5 shrink-0 self-center rounded-full"
-            :class="
-              feature.category === 'obstacle'
-                ? 'bg-red-600'
-                : 'border-2 border-teal-700 bg-white dark:border-teal-400 dark:bg-slate-900'
-            "
+            class="dot self-center"
+            :class="feature.category === 'obstacle' ? 'dot-obstacle' : 'dot-access'"
             aria-hidden="true"
           />
           <span class="min-w-0">
-            <span :class="{ 'font-semibold': feature.category === 'obstacle' }">
+            <span :class="{ 'font-bold': feature.category === 'obstacle' }">
               {{ kindLabel(feature.kind) }}
             </span>
-            <span v-if="feature.name" class="text-slate-500 dark:text-slate-400">
-              · {{ feature.name }}</span
-            >
+            <span v-if="feature.name" class="text-muted"> · {{ feature.name }}</span>
           </span>
         </li>
       </ol>

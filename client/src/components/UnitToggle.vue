@@ -16,7 +16,7 @@ const options: { value: DistanceUnit; label: string; name: string }[] = [
     role="group"
     aria-label="Distance unit"
     data-testid="unit-toggle"
-    class="inline-flex rounded-lg bg-slate-100 p-0.5 text-xs font-medium dark:bg-slate-800"
+    class="inline-flex rounded-xl border border-line bg-sunken p-0.5 text-xs font-semibold"
   >
     <button
       v-for="option in options"
@@ -25,12 +25,8 @@ const options: { value: DistanceUnit; label: string; name: string }[] = [
       :data-testid="`unit-${option.value}`"
       :aria-pressed="unit === option.value"
       :aria-label="option.name"
-      class="rounded-md px-2.5 py-1 transition-colors"
-      :class="
-        unit === option.value
-          ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-600 dark:text-white'
-          : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
-      "
+      class="rounded-lg px-2.5 py-1 transition-colors"
+      :class="unit === option.value ? 'bg-paper text-ink shadow-sm' : 'text-muted hover:text-ink'"
       @click="unit = option.value"
     >
       {{ option.label }}

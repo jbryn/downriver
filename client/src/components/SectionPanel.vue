@@ -7,7 +7,7 @@ import {
   MAX_SPEED,
   MIN_SPEED,
   SPEED_STEP,
-  formatDistance,
+  distanceValue,
   formatDuration,
   formatSpeed,
   paddlingMinutes
@@ -21,7 +21,7 @@ const { start, end, section, status, error } = storeToRefs(store)
 const { unit, speed } = storeToRefs(usePreferencesStore())
 
 const length = computed(() =>
-  section.value ? formatDistance(section.value.length, unit.value) : null
+  section.value ? distanceValue(section.value.length, unit.value) : null
 )
 
 const duration = computed(() =>
@@ -30,39 +30,40 @@ const duration = computed(() =>
 </script>
 
 <template>
-  <section class="mt-6" aria-labelledby="section-heading" data-testid="section-panel">
-    <h3
-      id="section-heading"
-      class="text-sm font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400"
-    >
+  <section class="mt-7" aria-labelledby="section-heading" data-testid="section-panel">
+    <h3 id="section-heading" class="text-xs font-bold tracking-[0.16em] text-muted uppercase">
       Your section
     </h3>
 
-    <p v-if="!start" class="mt-2 text-sm" data-testid="section-hint">
-      Click the river on the map to set where you start.
+    <p v-if="!start" class="mt-2 flex items-center gap-2" data-testid="section-hint">
+      <span class="buoy bg-start" aria-hidden="true">A</span>
+      Click the river where you put in.
     </p>
 
-    <p v-else-if="!end" class="mt-2 text-sm" data-testid="section-hint">
-      <span class="font-semibold text-emerald-600">A</span> is set. Click the river again to set
-      where you finish.
+    <p v-else-if="!end" class="mt-2 flex items-center gap-2" data-testid="section-hint">
+      <span class="buoy bg-finish" aria-hidden="true">B</span>
+      A is set. Now click where you take out.
     </p>
 
-    <div v-else-if="section" class="mt-2">
-      <p class="text-3xl font-semibold" data-testid="section-length">{{ length }}</p>
-      <p class="text-sm text-slate-500 dark:text-slate-400">
-        along the river from <span class="font-semibold text-emerald-600">A</span> to
-        <span class="font-semibold text-rose-600">B</span>
+    <div v-else-if="section" class="mt-1 animate-rise">
+      <p class="font-display text-6xl leading-none tracking-tight" data-testid="section-length">
+        {{ length }}<span class="text-2xl text-muted">{{ ` ${unit}` }}</span>
       </p>
+      <p class="mt-2 flex items-center gap-1.5 text-sm text-muted">
+        along the river from <span class="buoy buoy-sm bg-start">A</span> to
+        <span class="buoy buoy-sm bg-finish">B</span>
+      </p>
+
       <div
         v-if="!section.downstream"
-        class="mt-2 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-200"
+        class="mt-3 rounded-xl bg-warn px-3.5 py-3 text-sm text-warn-ink"
         data-testid="section-upstream"
       >
         <p>B is upstream of A: this trip goes against the current.</p>
         <!-- Reversing only helps when the points were set in the wrong order; a downstream trip needs no such button -->
         <button
           type="button"
-          class="mt-2 rounded-md border border-amber-300 px-2.5 py-1 font-medium hover:bg-amber-100 dark:border-amber-700 dark:hover:bg-amber-900"
+          class="mt-2 rounded-lg border border-current px-2.5 py-1 font-semibold transition hover:bg-warn-ink hover:text-warn"
           data-testid="section-reverse"
           @click="store.swap()"
         >
@@ -70,16 +71,17 @@ const duration = computed(() =>
         </button>
       </div>
 
-      <div class="mt-4 rounded-lg bg-slate-100 px-3 py-3 dark:bg-slate-800">
-        <p class="text-sm">
-          About <span class="font-semibold" data-testid="section-duration">{{ duration }}</span> of
-          paddling
+      <div class="mt-4 rounded-2xl border border-line bg-paper/70 px-4 py-3.5">
+        <p>
+          About
+          <span class="font-display text-xl" data-testid="section-duration">{{ duration }}</span>
+          of paddling
         </p>
-        <label class="mt-2 block text-xs text-slate-500 dark:text-slate-400" for="paddling-speed">
-          Average speed, breaks included:
-          <span class="font-medium text-slate-900 dark:text-white" data-testid="section-speed">
-            {{ formatSpeed(speed, unit) }}
-          </span>
+        <label class="mt-3 flex justify-between text-sm text-muted" for="paddling-speed">
+          <span>Average speed, breaks included</span>
+          <span class="font-semibold text-ink tabular-nums" data-testid="section-speed">{{
+            formatSpeed(speed, unit)
+          }}</span>
         </label>
         <input
           id="paddling-speed"
@@ -89,7 +91,7 @@ const duration = computed(() =>
           :max="MAX_SPEED"
           :step="SPEED_STEP"
           :aria-valuetext="formatSpeed(speed, unit)"
-          class="mt-1 w-full accent-blue-600"
+          class="mt-2 w-full accent-river"
           data-testid="speed-input"
         />
       </div>
@@ -99,7 +101,7 @@ const duration = computed(() =>
 
     <p
       v-if="status === 'loading'"
-      class="mt-2 text-sm text-slate-500"
+      class="mt-2 text-sm text-muted"
       aria-live="polite"
       data-testid="section-loading"
     >
@@ -108,21 +110,16 @@ const duration = computed(() =>
 
     <p
       v-if="status === 'error'"
-      class="mt-2 text-sm text-red-600 dark:text-red-400"
+      class="mt-2 text-sm text-danger"
       role="alert"
       data-testid="section-error"
     >
       {{ error }}
     </p>
 
-    <div v-if="start" class="mt-3 flex gap-2">
+    <div v-if="start" class="mt-4 flex gap-2">
       <CopyLinkButton v-if="end" />
-      <button
-        type="button"
-        class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-800"
-        data-testid="section-clear"
-        @click="store.clear()"
-      >
+      <button type="button" class="btn" data-testid="section-clear" @click="store.clear()">
         Clear
       </button>
     </div>

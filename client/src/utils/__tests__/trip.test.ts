@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   METERS_PER_MILE,
+  distanceValue,
   formatDistance,
   formatDuration,
   formatSpeed,
@@ -17,6 +18,13 @@ describe('formatDistance', () => {
   it('shows miles with one decimal', () => {
     expect(formatDistance(METERS_PER_MILE, 'mi')).toBe('1.0 mi')
     expect(formatDistance(57810.7, 'mi')).toBe('35.9 mi')
+  })
+})
+
+describe('distanceValue', () => {
+  it('is the number formatDistance shows, without the unit', () => {
+    expect(distanceValue(57810.7, 'km')).toBe('57.8')
+    expect(distanceValue(57810.7, 'mi')).toBe('35.9')
   })
 })
 

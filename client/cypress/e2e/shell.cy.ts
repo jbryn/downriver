@@ -51,12 +51,20 @@ describe('App shell', () => {
       cy.visit('/')
     })
 
-    it('shows the panel beside the map', () => {
+    it('floats the panel over the left of a full-width map', () => {
       byTestId('side-panel').then(($panel) => {
         byTestId('map-area').then(($map) => {
-          expect($panel[0].getBoundingClientRect().right).to.be.at.most(
-            $map[0].getBoundingClientRect().left + 1
-          )
+          const panel = $panel[0].getBoundingClientRect()
+          const map = $map[0].getBoundingClientRect()
+
+          cy.window().then((win) => {
+            expect(map.left).to.equal(0)
+            expect(map.right).to.be.closeTo(win.innerWidth, 1)
+          })
+          // Inset 16 px from the map's edges, and as wide as the room kept clear for it
+          expect(panel.left - map.left).to.be.closeTo(16, 1)
+          expect(panel.top - map.top).to.be.closeTo(16, 1)
+          expect(panel.right - map.left).to.be.at.most(416)
         })
       })
     })
