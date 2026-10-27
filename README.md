@@ -12,8 +12,8 @@ Work in progress, tracked in the [Kayak river tool v1](https://github.com/jbryn/
 
 | | |
 |---|---|
-| **Works now** | Search 15 Polish rivers and show one on the map. Click a start and a finish to measure the section along the river, then drag either end to adjust it. See the estimated paddling time at an adjustable speed, and the weirs, dams, bridges and landing places on the way, listed and marked on the map. Kilometers or miles; light and dark themes; desktop and phone layouts. |
-| **Next** | Shareable links; GPX export; Docker and a public deployment. |
+| **Works now** | Search 15 Polish rivers and show one on the map. Click a start and a finish to measure the section along the river, then drag either end to adjust it. See the estimated paddling time at an adjustable speed, and the weirs, dams, bridges and landing places on the way, listed and marked on the map. Share a trip with a link that reopens the same river, section, unit and speed. Kilometers or miles; light and dark themes; desktop and phone layouts. |
+| **Next** | GPX export; Docker and a public deployment. |
 
 ## How it works
 
@@ -77,9 +77,9 @@ client/
   src/
     api/         typed API client
     components/  Vue components
-    composables/ search and theme logic
+    composables/ search, theme and shareable-link logic
     stores/      Pinia stores: the selected river and section, and preferences
-    utils/       unit conversion, paddling time and feature labels
+    utils/       unit conversion, paddling time, feature labels and link encoding
   cypress/       end-to-end tests and their map helpers
 docs/            API reference
 ```

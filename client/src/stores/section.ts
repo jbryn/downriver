@@ -78,6 +78,11 @@ export const useSectionStore = defineStore('section', () => {
     }
   }
 
+  /** Sets a whole selection at once, as when opening a shared link */
+  function restore(from: LatLng, to: LatLng | null): Promise<void> {
+    return measure(from, to)
+  }
+
   function clear(): void {
     latest?.abort()
     latest = null
@@ -91,5 +96,18 @@ export const useSectionStore = defineStore('section', () => {
   // A selection belongs to one river
   watch(() => rivers.selectedId, clear)
 
-  return { start, end, section, status, error, revision, pick, moveStart, moveEnd, swap, clear }
+  return {
+    start,
+    end,
+    section,
+    status,
+    error,
+    revision,
+    pick,
+    moveStart,
+    moveEnd,
+    swap,
+    restore,
+    clear
+  }
 })

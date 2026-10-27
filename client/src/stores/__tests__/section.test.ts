@@ -241,4 +241,27 @@ describe('section store', () => {
     expect(api.urls()).toHaveLength(1)
     expect(store.status).toBe('idle')
   })
+
+  it('restores a whole selection with one request', async () => {
+    const store = useSectionStore()
+
+    void store.restore(A, B)
+    await answer(1, A, B, 5000)
+
+    expect(api.urls()[1]).toBe(sectionUrl(A, B))
+    expect(store.start?.point).toEqual(snapped(A))
+    expect(store.end?.point).toEqual(snapped(B))
+    expect(store.section?.length).toBe(5000)
+  })
+
+  it('restores just a start', async () => {
+    const store = useSectionStore()
+
+    void store.restore(A, null)
+    await answer(1, A, A, 0)
+
+    expect(api.urls()[1]).toBe(sectionUrl(A, A))
+    expect(store.start?.point).toEqual(snapped(A))
+    expect(store.end).toBeNull()
+  })
 })

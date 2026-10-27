@@ -4,6 +4,7 @@ import AppShell from './components/layout/AppShell.vue'
 import RiverDetails from './components/RiverDetails.vue'
 import RiverMap from './components/RiverMap.vue'
 import RiverSearch from './components/RiverSearch.vue'
+import { useTripLink } from './composables/useTripLink'
 import { useRiverStore } from './stores/river'
 import { useSectionStore } from './stores/section'
 
@@ -12,6 +13,8 @@ const { river, status } = storeToRefs(store)
 
 const sectionStore = useSectionStore()
 const { start, end, section, revision } = storeToRefs(sectionStore)
+
+void useTripLink()
 </script>
 
 <template>
